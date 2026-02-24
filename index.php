@@ -1,5 +1,5 @@
 <?php
-session_start(); /
+session_start(); 
 
 // Agar already login hai to dashboard redirect
 if(isset($_SESSION['admin_id'])){
