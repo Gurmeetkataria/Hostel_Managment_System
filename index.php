@@ -7,7 +7,7 @@ if(isset($_SESSION['admin_id'])){
     exit;
 }
 
-include 'includes/db_connect.php';
+// include 'includes/db_connect.php';
 
 // Login process
 if(isset($_POST['login'])){
