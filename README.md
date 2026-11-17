@@ -1,2 +1,2 @@
 # Hostel_Managment_System
-### visit:hostelmanager.free.nf/dashboard.php
+<a href="https://hostelmanager.free.nf/dashboard.php">Visit Now 🚀 </a>
