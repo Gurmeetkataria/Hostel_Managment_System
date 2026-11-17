@@ -2,104 +2,153 @@
 session_start();
 include '../includes/db_connect.php';
 
+// Session check
 if(!isset($_SESSION['admin_id'])){
     header("Location: ../index.php");
     exit;
 }
 
-$rooms = $conn->query("SELECT * FROM rooms ORDER BY id DESC")->fetchAll(PDO::FETCH_ASSOC);
+// Fetch all rooms for dropdown
+$rooms = $conn->query("SELECT * FROM rooms WHERE status='Available'")->fetchAll(PDO::FETCH_ASSOC);
+
+// Handle form submission
+if(isset($_POST['add_student'])){
+    $name = $_POST['name'];
+    $email = $_POST['email'];
+    $phone = $_POST['phone'];
+    $room_id = $_POST['room_id'];
+    $join_date = $_POST['join_date'];
+
+    $stmt = $conn->prepare("INSERT INTO students (name, email, phone, room_id, join_date) VALUES (?, ?, ?, ?, ?)");
+    $stmt->execute([$name, $email, $phone, $room_id, $join_date]);
+
+    $message = "Student added successfully!";
+}
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
+      <style>
+/* === Page Background === */
+body {
+    background: linear-gradient(135deg, #141e30, #243b55);
+    font-family: 'Poppins', sans-serif;
+    color: #fff;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+h3 {
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #fff;
+    letter-spacing: 1px;
+    text-shadow: 0 3px 10px rgba(253,246,246,0.2);
+    margin-bottom: 25px;
+    animation: fadeInDown 1s ease;
+}
+
+.p-4 {
+    animation: fadeInUp 1s ease;
+}
+
+form {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 30px;
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 0 25px rgba(0,0,0,0.4);
+    transition: all 0.4s ease;
+}
+
+form:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 0 40px rgba(0, 200, 255, 0.3);
+}
+
+label {
+    font-weight: 500;
+    color: #e6e6e6;
+    margin-bottom: 6px;
+}
+
+.form-control, .form-select {
+    background: rgba(255, 255, 255, 0.15);
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    padding: 12px;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    background: rgba(255, 255, 255, 0.25);
+    box-shadow: 0 0 10px rgba(0, 180, 255, 0.5);
+    color: #fff;
+}
+
+.form-control::placeholder {
+    color: #ccc;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #00c6ff, #0072ff);
+    border: none;
+    border-radius: 12px;
+    font-weight: 600;
+    padding: 12px 0;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0,114,255,0.4);
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #0072ff, #00c6ff);
+    box-shadow: 0 6px 20px rgba(0,114,255,0.5);
+    transform: translateY(-2px);
+}
+
+.btn-secondary {
+    border-radius: 12px;
+    padding: 12px 0;
+    font-weight: 500;
+}
+
+.alert-success {
+    background: rgba(0, 255, 120, 0.15);
+    color: #9cffb3;
+    border: 1px solid rgba(0,255,120,0.3);
+    border-radius: 10px;
+    text-align: center;
+    font-weight: 500;
+    animation: fadeIn 1s ease;
+}
+
+/* === Animations === */
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeInDown { from { opacity: 0; transform: translateY(-30px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* === Responsive === */
+@media (max-width: 768px) {
+    h3 { font-size: 1.6rem; text-align: center; }
+    form { padding: 20px; }
+    .btn-primary, .btn-secondary { font-size: 0.9rem; padding: 10px; }
+}
+
+@media (max-width: 576px) {
+    .p-4 { padding: 1rem !important; }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-thumb { background: #00aaff; border-radius: 10px; }
+</style>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>View Rooms - Hostel Management</title>
+    <title>Add Student - Hostel Management</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <style>
-        body {
-            min-height: 100vh;
-            background: linear-gradient(135deg, #141E30, #243B55);
-            color: #fff;
-            font-family: 'Poppins', sans-serif;
-        }
-
-        h3 {
-            font-weight: 600;
-            color: #f8f9fa;
-            border-left: 5px solid #0dcaf0;
-            padding-left: 10px;
-            margin-bottom: 20px;
-            letter-spacing: 1px;
-        }
-
-        .card-glass {
-            background: rgba(255, 255, 255, 0.1);
-            border: none;
-            backdrop-filter: blur(12px);
-            border-radius: 16px;
-            box-shadow: 0 4px 25px rgba(0, 0, 0, 0.4);
-        }
-
-        .table {
-            color: #fff;
-            border-collapse: separate;
-            border-spacing: 0 8px;
-        }
-
-        thead {
-            background: rgba(13, 202, 240, 0.8);
-            color: #fff;
-        }
-
-        tbody tr {
-            background-color: rgba(255, 255, 255, 0.08);
-            transition: all 0.3s ease;
-        }
-
-        tbody tr:hover {
-            background-color: rgba(255, 255, 255, 0.2);
-            transform: scale(1.01);
-        }
-
-        .table td, .table th {
-            vertical-align: middle;
-        }
-
-        .btn {
-            border-radius: 20px;
-            padding: 5px 15px;
-            transition: all 0.3s ease;
-        }
-
-        .btn-warning:hover {
-            background-color: #e0a800;
-            transform: translateY(-2px);
-        }
-
-        .btn-danger:hover {
-            background-color: #dc3545;
-            transform: translateY(-2px);
-        }
-
-        .alert {
-            border-radius: 12px;
-        }
-
-        @media (max-width: 768px) {
-            h3 {
-                font-size: 1.5rem;
-                text-align: center;
-            }
-            .table {
-                font-size: 0.9rem;
-            }
-        }
-    </style>
 </head>
-
 <body>
 <div class="d-flex">
     <!-- Sidebar -->
@@ -109,49 +158,45 @@ $rooms = $conn->query("SELECT * FROM rooms ORDER BY id DESC")->fetchAll(PDO::FET
 
     <!-- Main content -->
     <div class="p-4" style="width:100%;">
-        <div class=" card-glass p-4">
-            <h3 style="color:white;">View Rooms</h3>
+        <h3 style="color:white;">Add New Student</h3>
 
-            <?php if(isset($_GET['msg']) && $_GET['msg'] == 'deleted'){ ?>
-                <div class="alert alert-danger">Room deleted successfully!</div>
-            <?php } ?>
+        <?php if(isset($message)){ ?>
+            <div class="alert alert-success"><?php echo $message; ?></div>
+        <?php } ?>
 
-            <div class="table-responsive">
-                <table class="table align-middle mt-4">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Room No</th>
-                            <th>Type</th>
-                            <th>Capacity</th>
-                            <th>Status</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php $i=1; foreach($rooms as $room){ ?>
-                            <tr>
-                                <td><?php echo $i++; ?></td>
-                                <td><?php echo $room['room_no']; ?></td>
-                                <td><?php echo $room['room_type']; ?></td>
-                                <td><?php echo $room['capacity']; ?></td>
-                                <td>
-                                    <?php if($room['status'] == 'Available'){ ?>
-                                        <span class="badge bg-success"><?php echo $room['status']; ?></span>
-                                    <?php } else { ?>
-                                        <span class="badge bg-danger"><?php echo $room['status']; ?></span>
-                                    <?php } ?>
-                                </td>
-                                <td>
-                                    <a href="update_room.php?id=<?php echo $room['id']; ?>" class="btn btn-sm btn-warning">Edit</a>
-                                    <a href="delete_room.php?id=<?php echo $room['id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('Delete this room?');">Delete</a>
-                                </td>
-                            </tr>
+        <form method="post" class="mt-4">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label>Name</label>
+                    <input type="text" name="name" class="form-control" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label>Email</label>
+                    <input type="email" name="email" class="form-control" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label>Phone</label>
+                    <input type="text" name="phone" class="form-control" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label>Room</label>
+                    <select name="room_id" class="form-select" required>
+                        <option value="">Select Room</option>
+                        <?php foreach($rooms as $room){ ?>
+                            <option value="<?php echo $room['id']; ?>"style="color:black;">
+                                <?php echo $room['room_no'] . " (" . $room['room_type'] . ")"; ?>
+                            </option>
                         <?php } ?>
-                    </tbody>
-                </table>
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label>Join Date</label>
+                    <input type="date" name="join_date" class="form-control" required>
+                </div>
             </div>
-        </div>
+
+            <button type="submit" name="add_student" class="btn btn-primary">Add Student</button>
+        </form>
     </div>
 </div>
 </body>
